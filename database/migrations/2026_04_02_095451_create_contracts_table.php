@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('client_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('freelancer_id')->constrained('users')->cascadeOnDelete();
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }
