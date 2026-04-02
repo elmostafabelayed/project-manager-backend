@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->decimal('budget', 10, 2);
+            $table->foreignId('client_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
