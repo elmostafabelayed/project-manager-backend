@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('proposals', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('freelancer_id')->constrained('users')->cascadeOnDelete();
+            $table->decimal('price', 10, 2);
+            $table->text('message');
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }
