@@ -7,9 +7,12 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    use HasApiTokens;
+
     use HasFactory, Notifiable;
 
     protected $fillable = [
@@ -33,19 +36,23 @@ class User extends Authenticatable
     }
 
 
-    public function role() {
+    public function role()
+    {
         return $this->belongsTo(Role::class);
     }
 
-    public function projects() {
+    public function projects()
+    {
         return $this->hasMany(Project::class, 'client_id');
     }
 
-    public function proposals() {
+    public function proposals()
+    {
         return $this->hasMany(Proposal::class, 'freelancer_id');
     }
 
-    public function sentMessages() {
+    public function sentMessages()
+    {
         return $this->hasMany(Message::class, 'sender_id');
     }
 }
