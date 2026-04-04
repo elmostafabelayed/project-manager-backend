@@ -4,7 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\MessageController;
 
+Route::post('/messages', [MessageController::class, 'store'])
+    ->middleware('auth:sanctum');
+
+Route::get('/conversations/{id}/messages', [MessageController::class, 'index'])
+    ->middleware('auth:sanctum');
 Route::post('/proposals', [ProposalController::class, 'store'])
     ->middleware('auth:sanctum');
 
