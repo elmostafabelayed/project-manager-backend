@@ -6,15 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    public function client() {
+    protected $fillable = [
+        'title',
+        'description',
+        'budget',
+        'client_id'
+    ];
+    public function client()
+    {
         return $this->belongsTo(User::class, 'client_id');
     }
 
-    public function proposals() {
+    public function proposals()
+    {
         return $this->hasMany(Proposal::class);
     }
 
-    public function conversation() {
+    public function conversation()
+    {
         return $this->hasOne(Conversation::class);
     }
 }
