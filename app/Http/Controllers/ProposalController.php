@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
+use App\Models\Conversation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Proposal;
 use Illuminate\Http\Request;
@@ -21,6 +23,19 @@ class ProposalController extends Controller
 
         $proposal->update([
             'status' => 'accepted'
+        ]);
+
+        
+        Contract::create([
+            'project_id'    => $proposal->project_id,
+            'client_id'     => Auth::id(),
+            'freelancer_id' => $proposal->freelancer_id,
+            'status'        => 'active'
+        ]);
+
+       
+        Conversation::create([
+            'project_id' => $proposal->project_id
         ]);
 
         return $proposal;

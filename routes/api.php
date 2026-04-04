@@ -10,7 +10,7 @@ Route::post('/proposals', [ProposalController::class, 'store'])
 
 Route::get('/projects/{id}/proposals', [ProposalController::class, 'index']);
 
-Route::post('/proposals/{id}/accept', [ProposalController::class, 'accept'])
+Route::put('/proposals/{id}/accept', [ProposalController::class, 'accept'])
     ->middleware('auth:sanctum');
 Route::get('/projects', [ProjectController::class, 'index']);
 
