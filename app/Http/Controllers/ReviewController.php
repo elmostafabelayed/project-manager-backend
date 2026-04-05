@@ -14,12 +14,12 @@ class ReviewController extends Controller
    public function store(Request $request)
 {
     try {
-        // 1. ما تعطيش review لنفسك
+       
         if (Auth::id() == $request->reviewed_id) {
             return response()->json(['error' => 'You cannot review yourself'], 400);
         }
 
-        // 2. ما تعطيش review مرتين
+    
         $exists = Review::where('reviewer_id', Auth::id())
                         ->where('project_id', $request->project_id)
                         ->exists();
@@ -28,7 +28,7 @@ class ReviewController extends Controller
             return response()->json(['error' => 'Already reviewed'], 400);
         }
 
-        // 3. خلق review + إنهاء project
+       
         $project = Project::findOrFail($request->project_id);
         $project->update(['status' => 'completed']);
 
