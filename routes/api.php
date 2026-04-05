@@ -5,7 +5,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ReviewController;
 
+Route::post('/reviews', [ReviewController::class, 'store'])
+    ->middleware('auth:sanctum');
 Route::post('/messages', [MessageController::class, 'store'])
     ->middleware('auth:sanctum');
 
