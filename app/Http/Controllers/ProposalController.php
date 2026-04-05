@@ -25,7 +25,7 @@ class ProposalController extends Controller
             'status' => 'accepted'
         ]);
 
-        
+
         Contract::create([
             'project_id'    => $proposal->project_id,
             'client_id'     => Auth::id(),
@@ -33,7 +33,7 @@ class ProposalController extends Controller
             'status'        => 'active'
         ]);
 
-       
+
         Conversation::create([
             'project_id' => $proposal->project_id
         ]);
@@ -49,4 +49,4 @@ class ProposalController extends Controller
             'message' => $request->message,
         ]);
     }
-}
+}   
