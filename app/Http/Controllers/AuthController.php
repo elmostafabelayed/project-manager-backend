@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Profile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-
-
     public function register(Request $request)
     {
         $user = User::create([
@@ -19,8 +18,18 @@ class AuthController extends Controller
             'role_id' => $request->role_id
         ]);
 
+        Profile::create([
+            'user_id' => $user->id,
+            'title' => null,
+            'bio' => null,
+            'location' => null,
+            'profile_picture' => null,
+            'hourly_rate' => null,
+        ]);
+
         return response()->json($user);
     }
+
     public function login(Request $request)
     {
         $user = User::where('email', $request->email)->first();

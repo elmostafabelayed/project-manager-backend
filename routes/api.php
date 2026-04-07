@@ -6,6 +6,10 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ProfileController;
+
+Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth:sanctum');
+Route::post('/profile', [ProfileController::class, 'update'])->middleware('auth:sanctum');
 
 Route::post('/reviews', [ReviewController::class, 'store'])
     ->middleware('auth:sanctum');
