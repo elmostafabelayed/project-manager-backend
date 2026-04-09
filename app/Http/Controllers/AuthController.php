@@ -27,7 +27,10 @@ class AuthController extends Controller
             'hourly_rate' => null,
         ]);
 
+        $token = $user->createToken('token')->plainTextToken;
+
         return response()->json([
+            'token' => $token,
             'user' => $user
         ], 201);
     }
