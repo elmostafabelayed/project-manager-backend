@@ -27,7 +27,9 @@ class AuthController extends Controller
             'hourly_rate' => null,
         ]);
 
-        return response()->json($user);
+        return response()->json([
+            'user' => $user
+        ], 201);
     }
 
     public function login(Request $request)
