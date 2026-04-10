@@ -17,6 +17,14 @@ class ProposalController extends Controller
             ->where('project_id', $projectId)
             ->get();
     }
+
+    public function myProposals()
+    {
+        return Proposal::with('project.client')
+            ->where('freelancer_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
     public function accept($id)
     {
         $proposal = Proposal::findOrFail($id);
