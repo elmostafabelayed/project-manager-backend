@@ -50,4 +50,19 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+
+    public function logout(Request $request)
+    {
+        try {
+            if ($request->user()) {
+                $request->user()->currentAccessToken()->delete();
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Logout token revocation failed: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ]);
+    }
 }
