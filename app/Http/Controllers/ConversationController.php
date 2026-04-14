@@ -15,36 +15,24 @@ class ConversationController extends Controller
     {
         $userId = Auth::id();
 
-        // Get conversations where the user is either the client or the accepted freelancer
-        $conversations = Conversation::with(['project.client', 'project.proposals' => function($query) {
-                $query->where('status', 'accepted')->with('freelancer');
-            }])
-            ->whereHas('project', function ($query) use ($userId) {
-                $query->where('client_id', $userId)
-                    ->orWhereHas('proposals', function ($q) use ($userId) {
-                        $q->where('freelancer_id', $userId)->where('status', 'accepted');
-                    });
-            })
+        // Get conversations where the user is either the client or the freelancer
+        $conversations = Conversation::with(['project', 'client', 'freelancer'])
+            ->where('client_id', $userId)
+            ->orWhere('freelancer_id', $userId)
             ->get();
 
         // Format for easier frontend consumption
         $formatted = $conversations->map(function ($conversation) use ($userId) {
-            $project = $conversation->project;
-            $acceptedProposal = $project->proposals->first();
-            
             // Determine the "other participant"
-            $otherParticipant = null;
-            if ($project->client_id == $userId) {
-                $otherParticipant = $acceptedProposal ? $acceptedProposal->freelancer : null;
-            } else {
-                $otherParticipant = $project->client;
-            }
+            $otherParticipant = ($conversation->client_id == $userId) 
+                ? $conversation->freelancer 
+                : $conversation->client;
 
             return [
                 'id' => $conversation->id,
                 'project' => [
-                    'id' => $project->id,
-                    'title' => $project->title,
+                    'id' => $conversation->project->id,
+                    'title' => $conversation->project->title,
                 ],
                 'other_participant' => $otherParticipant ? [
                     'id' => $otherParticipant->id,

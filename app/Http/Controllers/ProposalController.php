@@ -43,7 +43,9 @@ class ProposalController extends Controller
 
 
         Conversation::create([
-            'project_id' => $proposal->project_id
+            'project_id' => $proposal->project_id,
+            'client_id' => Auth::id(),
+            'freelancer_id' => $proposal->freelancer_id
         ]);
 
         return $proposal;
