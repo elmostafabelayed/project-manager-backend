@@ -12,13 +12,41 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $profile = $request->user()->profile;
+        $user = $request->user()->load(['profile', 'skills', 'role']);
         
-        if (!$profile) {
-            return response()->json(['message' => 'Profile not found'], 404);
+        if (!$user->profile) {
+            // Create a default profile if it doesn't exist yet to avoid 404
+            $user->profile()->create([
+                'user_id' => $user->id
+            ]);
+            $user->load('profile');
         }
 
-        return response()->json($profile);
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'profile' => $user->profile,
+            'skills' => $user->skills
+        ]);
+    }
+
+    /**
+     * Display a specific user's public profile.
+     */
+    public function publicShow($id)
+    {
+        $user = \App\Models\User::with(['profile', 'skills', 'role'])->findOrFail($id);
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'role' => $user->role,
+            'profile' => $user->profile,
+            'skills' => $user->skills,
+            'created_at' => $user->created_at
+        ]);
     }
 
     

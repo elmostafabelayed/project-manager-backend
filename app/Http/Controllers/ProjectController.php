@@ -10,6 +10,11 @@ class ProjectController extends Controller
     {
         return \App\Models\Project::with('client')->get();
     }
+
+    public function myProjects()
+    {
+        return \App\Models\Project::where('client_id', auth()->id())->get();
+    }
     public function store(Request $request)
     {
         return \App\Models\Project::create([
