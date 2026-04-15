@@ -53,6 +53,7 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $validatedData = $request->validate([
+            'name' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
             'location' => 'nullable|string|max:255',
@@ -62,6 +63,12 @@ class ProfileController extends Controller
 
         $user = $request->user();
         
+        // Update user name if provided
+        if (isset($validatedData['name'])) {
+            $user->update(['name' => $validatedData['name']]);
+            unset($validatedData['name']);
+        }
+
         if ($request->hasFile('profile_picture')) {
             $validatedData['profile_picture'] = $request->file('profile_picture')->store('profiles', 'public');
         }
@@ -73,7 +80,8 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'profile' => $profile
+            'profile' => $profile,
+            'user' => $user->fresh()
         ]);
     }
 }
