@@ -25,6 +25,11 @@ class MessageController extends Controller
     }
     public function store(Request $request)
     {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id',
+            'content' => 'required|string|min:1'
+        ]);
+
         $conversation = Conversation::findOrFail($request->conversation_id);
 
         // Authorize user

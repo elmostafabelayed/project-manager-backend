@@ -17,6 +17,12 @@ class ProjectController extends Controller
     }
     public function store(Request $request)
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|min:20',
+            'budget' => 'required|numeric|min:1'
+        ]);
+
         return \App\Models\Project::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -27,6 +33,12 @@ class ProjectController extends Controller
     public function update(Request $request, $id)
     {
         $project = \App\Models\Project::findOrFail($id);
+
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|required|string|min:20',
+            'budget' => 'sometimes|required|numeric|min:1'
+        ]);
 
         $project->update($request->all());
 

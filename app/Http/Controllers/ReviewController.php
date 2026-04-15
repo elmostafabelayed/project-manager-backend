@@ -13,6 +13,13 @@ class ReviewController extends Controller
 
    public function store(Request $request)
 {
+    $request->validate([
+        'project_id' => 'required|exists:projects,id',
+        'reviewed_id' => 'required|exists:users,id',
+        'rating' => 'required|integer|min:1|max:5',
+        'comment' => 'required|string|min:5|max:1000'
+    ]);
+
     try {
        
         if (Auth::id() == $request->reviewed_id) {

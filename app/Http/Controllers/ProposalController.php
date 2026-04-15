@@ -52,10 +52,18 @@ class ProposalController extends Controller
     }
     public function store(Request $request)
     {
+        $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'price' => 'required|numeric|min:1',
+            'duration' => 'required|numeric|min:1',
+            'message' => 'required|string|min:10',
+        ]);
+
         return Proposal::create([
             'project_id' => $request->project_id,
             'freelancer_id' => Auth::id(),
             'price' => $request->price,
+            'duration' => $request->duration,
             'message' => $request->message,
         ]);
     }
