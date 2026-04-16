@@ -46,6 +46,9 @@ Route::get('/my-projects', [ProjectController::class, 'myProjects'])
 Route::post('/projects', [ProjectController::class, 'store'])
     ->middleware('auth:sanctum');
 
+Route::post('/projects/from-proposal', [ProjectController::class, 'createFromProposal'])
+    ->middleware('auth:sanctum');
+
 Route::put('/projects/{id}', [ProjectController::class, 'update'])
     ->middleware('auth:sanctum');
 

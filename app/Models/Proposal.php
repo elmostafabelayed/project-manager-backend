@@ -10,8 +10,10 @@ class Proposal extends Model
         'project_id',
         'freelancer_id',
         'price',
+        'duration',
         'message',
         'status'
+        
     ];
     public function project()
     {

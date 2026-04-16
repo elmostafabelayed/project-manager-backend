@@ -52,4 +52,26 @@ class ProjectController extends Controller
 
         return response()->json(['message' => 'Deleted']);
     }
+
+    public function createFromProposal(Request $request)
+    {
+        $request->validate([
+            'proposal_id' => 'required|exists:proposals,id',
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string|min:20',
+            'budget' => 'sometimes|numeric|min:1'
+        ]);
+
+        $proposal = \App\Models\Proposal::with('project')->findOrFail($request->proposal_id);
+
+        $project = \App\Models\Project::create([
+            'title' => $request->title ?? $proposal->project->title ?? 'Project from Proposal',
+            'description' => $request->description ?? $proposal->project->description ?? '',
+            'budget' => $request->budget ?? $proposal->price,
+            'client_id' => auth()->id(),
+            'status' => 'active'
+        ]);
+
+        return $project;
+    }
 }
