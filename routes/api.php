@@ -10,6 +10,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth:sanctum');
 Route::get('/users/{id}/profile', [ProfileController::class, 'publicShow']);
@@ -53,6 +54,16 @@ Route::put('/projects/{id}', [ProjectController::class, 'update'])
     ->middleware('auth:sanctum');
 
 Route::delete('/projects/{id}', [ProjectController::class, 'destroy'])
+    ->middleware('auth:sanctum');
+Route::get('/notifications', [NotificationController::class, 'index'])
+    ->middleware('auth:sanctum');
+Route::put('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
+    ->middleware('auth:sanctum');
+Route::put('/notifications/messages/read', [NotificationController::class, 'markAllMessageNotificationsRead'])
+    ->middleware('auth:sanctum');
+Route::put('/notifications/conversation/{conversationId}/read', [NotificationController::class, 'markConversationNotificationsRead'])
+    ->middleware('auth:sanctum');
+Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
     ->middleware('auth:sanctum');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

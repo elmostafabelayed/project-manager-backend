@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\Conversation;
+use App\Models\Notification;
+use App\Notifications\NewProposalNotification;
+use App\Notifications\ProposalAcceptedNotification;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Proposal;
 use Illuminate\Http\Request;
@@ -33,7 +36,6 @@ class ProposalController extends Controller
             'status' => 'accepted'
         ]);
 
-
         Contract::create([
             'project_id'    => $proposal->project_id,
             'client_id'     => Auth::id(),
@@ -41,12 +43,24 @@ class ProposalController extends Controller
             'status'        => 'active'
         ]);
 
-
         Conversation::create([
             'project_id' => $proposal->project_id,
             'client_id' => Auth::id(),
             'freelancer_id' => $proposal->freelancer_id
         ]);
+
+        // Notify the freelancer about proposal acceptance
+        $proposal->freelancer->notifications()->create([
+            'type' => 'proposal_accepted',
+            'data' => [
+                'project_id' => $proposal->project_id,
+                'proposal_id' => $proposal->id,
+                'client_name' => Auth::user()->name,
+            ],
+        ]);
+
+        // Send email notification
+        $proposal->freelancer->notify(new ProposalAcceptedNotification($proposal));
 
         return $proposal;
     }
@@ -59,12 +73,27 @@ class ProposalController extends Controller
             'message' => 'required|string|min:10',
         ]);
 
-        return Proposal::create([
+        $proposal = Proposal::create([
             'project_id' => $request->project_id,
             'freelancer_id' => Auth::id(),
             'price' => $request->price,
             'duration' => $request->duration,
             'message' => $request->message,
         ]);
+
+        // Notify the client about new proposal
+        $proposal->project->client->notifications()->create([
+            'type' => 'proposal_new',
+            'data' => [
+                'project_id' => $proposal->project_id,
+                'proposal_id' => $proposal->id,
+                'freelancer_name' => $proposal->freelancer->name,
+            ],
+        ]);
+
+        // Send email notification
+        $proposal->project->client->notify(new NewProposalNotification($proposal));
+
+        return $proposal;
     }
 }   
