@@ -20,13 +20,15 @@ class ProjectController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|min:20',
-            'budget' => 'required|numeric|min:1'
+            'budget' => 'required|numeric|min:1',
+            'category' => 'nullable|string'
         ]);
 
         return \App\Models\Project::create([
             'title' => $request->title,
             'description' => $request->description,
             'budget' => $request->budget,
+            'category' => $request->category,
             'client_id' => auth()->id()
         ]);
     }
@@ -37,7 +39,8 @@ class ProjectController extends Controller
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string|min:20',
-            'budget' => 'sometimes|required|numeric|min:1'
+            'budget' => 'sometimes|required|numeric|min:1',
+            'category' => 'sometimes|nullable|string'
         ]);
 
         $project->update($request->all());
@@ -59,7 +62,8 @@ class ProjectController extends Controller
             'proposal_id' => 'required|exists:proposals,id',
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string|min:20',
-            'budget' => 'sometimes|numeric|min:1'
+            'budget' => 'sometimes|numeric|min:1',
+            'category' => 'sometimes|nullable|string'
         ]);
 
         $proposal = \App\Models\Proposal::with('project')->findOrFail($request->proposal_id);
@@ -68,6 +72,7 @@ class ProjectController extends Controller
             'title' => $request->title ?? $proposal->project->title ?? 'Project from Proposal',
             'description' => $request->description ?? $proposal->project->description ?? '',
             'budget' => $request->budget ?? $proposal->price,
+            'category' => $request->category ?? $proposal->project->category ?? null,
             'client_id' => auth()->id(),
             'status' => 'active'
         ]);

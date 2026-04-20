@@ -10,6 +10,7 @@ class Project extends Model
         'title',
         'description',
         'budget',
+        'category',
         'client_id'
     ];
     public function client()
