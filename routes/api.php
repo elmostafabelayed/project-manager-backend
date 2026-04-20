@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\NotificationController;
 
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth:sanctum');
+Route::get('/freelancers', [ProfileController::class, 'index']);
 Route::get('/users/{id}/profile', [ProfileController::class, 'publicShow']);
 Route::post('/profile', [ProfileController::class, 'update'])->middleware('auth:sanctum');
 

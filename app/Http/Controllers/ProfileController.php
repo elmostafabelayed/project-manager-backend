@@ -8,6 +8,27 @@ use App\Models\Profile;
 class ProfileController extends Controller
 {
     /**
+     * Display a listing of freelancers.
+     */
+    public function index(Request $request)
+    {
+        $category = $request->query('category');
+
+        $query = \App\Models\User::where('role_id', 2)
+            ->with(['profile', 'skills']);
+
+        if ($category) {
+            $query->whereHas('skills', function ($q) use ($category) {
+                $q->where('category', $category);
+            });
+        }
+
+        $freelancers = $query->get();
+
+        return response()->json($freelancers);
+    }
+
+    /**
      * Display the authenticated user's profile.
      */
     public function show(Request $request)
