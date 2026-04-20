@@ -6,9 +6,13 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return \App\Models\Project::with('client')->get();
+        return \App\Models\Project::with('client')
+            ->when($request->filled('category'), function ($query) use ($request) {
+                $query->where('category', $request->category);
+            })
+            ->get();
     }
 
     public function myProjects()

@@ -12,16 +12,14 @@ class ProfileController extends Controller
      */
     public function index(Request $request)
     {
-        $category = $request->query('category');
-
         $query = \App\Models\User::where('role_id', 2)
             ->with(['profile', 'skills']);
 
-        if ($category) {
-            $query->whereHas('skills', function ($q) use ($category) {
-                $q->where('category', $category);
+        $query->when($request->filled('category'), function ($q) use ($request) {
+            $q->whereHas('skills', function ($skillQuery) use ($request) {
+                $skillQuery->where('category', $request->category);
             });
-        }
+        });
 
         $freelancers = $query->get();
 
