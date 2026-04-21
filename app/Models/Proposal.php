@@ -12,8 +12,8 @@ class Proposal extends Model
         'price',
         'duration',
         'message',
-        'status'
-        
+        'status',
+        'source'
     ];
     public function project()
     {

@@ -79,6 +79,7 @@ class ProposalController extends Controller
             'price' => $request->price,
             'duration' => $request->duration,
             'message' => $request->message,
+            'source' => 'freelancer'
         ]);
 
         // Notify the client about new proposal
@@ -93,6 +94,76 @@ class ProposalController extends Controller
 
         // Send email notification
         $proposal->project->client->notify(new NewProposalNotification($proposal));
+
+        return $proposal;
+    }
+
+    public function invite(Request $request)
+    {
+        $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'freelancer_id' => 'required|exists:users,id',
+            'message' => 'required|string|min:10',
+        ]);
+
+        // Check if project belongs to the authenticated client
+        $project = \App\Models\Project::where('id', $request->project_id)
+            ->where('client_id', Auth::id())
+            ->firstOrFail();
+
+        $proposal = Proposal::create([
+            'project_id' => $request->project_id,
+            'freelancer_id' => $request->freelancer_id,
+            'price' => 0,
+            'duration' => 0,
+            'message' => $request->message,
+            'status' => 'invited',
+            'source' => 'client'
+        ]);
+
+        // Notify the freelancer about the invitation
+        $proposal->freelancer->notifications()->create([
+            'type' => 'invitation_new',
+            'data' => [
+                'project_id' => $proposal->project_id,
+                'proposal_id' => $proposal->id,
+                'client_name' => Auth::user()->name,
+                'project_title' => $project->title,
+                'message_content' => $request->message,
+            ],
+        ]);
+
+        return $proposal;
+    }
+
+    public function respondInvitation(Request $request, $id)
+    {
+        $proposal = Proposal::where('id', $id)
+            ->where('freelancer_id', Auth::id())
+            ->where('status', 'invited')
+            ->firstOrFail();
+
+        $request->validate([
+            'price' => 'required|numeric|min:1',
+            'duration' => 'required|numeric|min:1',
+        ]);
+
+        $proposal->update([
+            'price' => $request->price,
+            'duration' => $request->duration,
+            'status' => 'pending'
+        ]);
+
+        // Notify the client about the response
+        $proposal->project->client->notifications()->create([
+            'type' => 'invitation_response',
+            'data' => [
+                'project_id' => $proposal->project_id,
+                'proposal_id' => $proposal->id,
+                'freelancer_name' => Auth::user()->name,
+                'project_title' => $proposal->project->title,
+            ],
+        ]);
 
         return $proposal;
     }

@@ -30,6 +30,12 @@ Route::get('/conversations/{id}/messages', [MessageController::class, 'index'])
 Route::post('/proposals', [ProposalController::class, 'store'])
     ->middleware('auth:sanctum');
 
+Route::post('/invitations', [ProposalController::class, 'invite'])
+    ->middleware('auth:sanctum');
+
+Route::put('/invitations/{id}/respond', [ProposalController::class, 'respondInvitation'])
+    ->middleware('auth:sanctum');
+
 Route::get('/my-proposals', [ProposalController::class, 'myProposals'])
     ->middleware('auth:sanctum');
 
