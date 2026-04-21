@@ -22,13 +22,13 @@ class SkillSeeder extends Seeder
             'AI & emerging tech' => [
                 'Machine Learning', 'Data Science', 'Natural Language Processing', 'OpenAI API', 'TensorFlow', 'PyTorch', 'Blockchain', 'Solidity', 'Web3', 'Chatbot Development'
             ],
-            'Markeing' => [
+            'Marketing' => [
                 'Digital Marketing', 'SEO', 'Social Media Marketing', 'Email Marketing', 'Content Marketing', 'Google Ads', 'Facebook Ads', 'Growth Hacking', 'Copywriting'
             ],
             'Writing & content' => [
                 'Article Writing', 'Blog Writing', 'Technical Writing', 'Proofreading', 'Translation', 'Creative Writing', 'Scriptwriting', 'Editing'
             ],
-            'Adming & support' => [
+            'Admin & support' => [
                 'Virtual Assistant', 'Data Entry', 'Customer Support', 'Project Management', 'Administrative Support', 'Microsoft Office', 'Google Workspace'
             ],
         ];
