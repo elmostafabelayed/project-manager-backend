@@ -64,6 +64,27 @@ class ProposalController extends Controller
 
         return $proposal;
     }
+
+    public function reject($id)
+    {
+        $proposal = Proposal::findOrFail($id);
+
+        $proposal->update([
+            'status' => 'rejected'
+        ]);
+
+        // Notify the freelancer about proposal rejection
+        $proposal->freelancer->notifications()->create([
+            'type' => 'proposal_rejected',
+            'data' => [
+                'project_id' => $proposal->project_id,
+                'proposal_id' => $proposal->id,
+                'client_name' => Auth::user()->name,
+            ],
+        ]);
+
+        return $proposal;
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -146,11 +167,13 @@ class ProposalController extends Controller
         $request->validate([
             'price' => 'required|numeric|min:1',
             'duration' => 'required|numeric|min:1',
+            'message' => 'required|string|min:20',
         ]);
 
         $proposal->update([
             'price' => $request->price,
             'duration' => $request->duration,
+            'response_message' => $request->message,
             'status' => 'pending'
         ]);
 

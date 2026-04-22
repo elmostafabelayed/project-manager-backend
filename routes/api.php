@@ -47,6 +47,8 @@ Route::get('/projects/{id}/proposals', [ProposalController::class, 'index']);
 
 Route::put('/proposals/{id}/accept', [ProposalController::class, 'accept'])
     ->middleware('auth:sanctum');
+Route::put('/proposals/{id}/reject', [ProposalController::class, 'reject'])
+    ->middleware('auth:sanctum');
 Route::get('/projects', [ProjectController::class, 'index']);
 Route::get('/my-projects', [ProjectController::class, 'myProjects'])
     ->middleware('auth:sanctum');

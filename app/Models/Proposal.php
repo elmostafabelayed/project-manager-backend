@@ -13,7 +13,8 @@ class Proposal extends Model
         'duration',
         'message',
         'status',
-        'source'
+        'source',
+        'response_message'
     ];
     public function project()
     {
