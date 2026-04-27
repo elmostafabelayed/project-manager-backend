@@ -16,7 +16,7 @@ class ConversationController extends Controller
         $userId = Auth::id();
 
         // Get conversations where the user is either the client or the freelancer
-        $conversations = Conversation::with(['project', 'client', 'freelancer'])
+        $conversations = Conversation::with(['project', 'client.profile', 'freelancer.profile'])
             ->where('client_id', $userId)
             ->orWhere('freelancer_id', $userId)
             ->get();
@@ -37,6 +37,7 @@ class ConversationController extends Controller
                 'other_participant' => $otherParticipant ? [
                     'id' => $otherParticipant->id,
                     'name' => $otherParticipant->name,
+                    'profile' => $otherParticipant->profile,
                 ] : null,
                 'last_message' => $conversation->messages()->latest()->first(),
                 'updated_at' => $conversation->updated_at,

@@ -8,7 +8,7 @@ class ProjectController extends Controller
 {
     public function index(Request $request)
     {
-        return \App\Models\Project::with('client')
+        return \App\Models\Project::with('client.profile')
             ->when($request->filled('category'), function ($query) use ($request) {
                 $query->where('category', $request->category);
             })
