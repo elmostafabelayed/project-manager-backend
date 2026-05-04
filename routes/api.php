@@ -24,6 +24,8 @@ Route::post('/messages', [MessageController::class, 'store'])
 
 Route::get('/conversations', [ConversationController::class, 'index'])
     ->middleware('auth:sanctum');
+Route::post('/conversations/show-or-create', [ConversationController::class, 'showOrCreate'])
+    ->middleware('auth:sanctum');
 
 Route::get('/conversations/{id}/messages', [MessageController::class, 'index'])
     ->middleware('auth:sanctum');
