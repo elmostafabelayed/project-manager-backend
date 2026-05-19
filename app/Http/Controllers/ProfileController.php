@@ -31,7 +31,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $user = $request->user()->load(['profile', 'skills', 'role']);
+        $user = $request->user()->load(['profile', 'skills', 'role', 'reviewsReceived.reviewer']);
         
         if (!$user->profile) {
             // Create a default profile if it doesn't exist yet to avoid 404
@@ -47,7 +47,8 @@ class ProfileController extends Controller
             'email' => $user->email,
             'role' => $user->role,
             'profile' => $user->profile,
-            'skills' => $user->skills
+            'skills' => $user->skills,
+            'reviews_received' => $user->reviewsReceived
         ]);
     }
 
@@ -56,7 +57,7 @@ class ProfileController extends Controller
      */
     public function publicShow($id)
     {
-        $user = \App\Models\User::with(['profile', 'skills', 'role'])->findOrFail($id);
+        $user = \App\Models\User::with(['profile', 'skills', 'role', 'reviewsReceived.reviewer'])->findOrFail($id);
 
         return response()->json([
             'id' => $user->id,
@@ -64,7 +65,8 @@ class ProfileController extends Controller
             'role' => $user->role,
             'profile' => $user->profile,
             'skills' => $user->skills,
-            'created_at' => $user->created_at
+            'created_at' => $user->created_at,
+            'reviews_received' => $user->reviewsReceived
         ]);
     }
 

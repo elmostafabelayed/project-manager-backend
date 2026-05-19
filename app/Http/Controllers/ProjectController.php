@@ -17,7 +17,7 @@ class ProjectController extends Controller
 
     public function myProjects()
     {
-        return \App\Models\Project::where('client_id', auth()->id())->get();
+        return \App\Models\Project::where('client_id', auth()->id())->with('contract.freelancer')->get();
     }
     public function store(Request $request)
     {
