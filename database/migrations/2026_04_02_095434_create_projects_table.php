@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->decimal('budget', 10, 2);
+            $table->string('category')->nullable();
             $table->foreignId('client_id')->constrained('users')->cascadeOnDelete();
+            $table->string('status')->default('open');
             $table->timestamps();
         });
     }

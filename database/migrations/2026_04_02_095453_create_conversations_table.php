@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('client_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('freelancer_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

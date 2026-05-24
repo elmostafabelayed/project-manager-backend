@@ -16,8 +16,11 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('freelancer_id')->constrained('users')->cascadeOnDelete();
             $table->decimal('price', 10, 2);
+            $table->integer('duration')->nullable();
             $table->text('message');
+            $table->text('response_message')->nullable();
             $table->string('status')->default('pending');
+            $table->string('source')->default('freelancer');
             $table->timestamps();
         });
     }
