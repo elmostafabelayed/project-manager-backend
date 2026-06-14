@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -34,10 +35,10 @@ class AuthController extends Controller
             'hourly_rate' => null,
         ]);
 
-        $token = $user->createToken('token')->plainTextToken;
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
-            'token' => $token,
             'user' => $user
         ], 201);
     }
@@ -49,29 +50,23 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $request->session()->regenerate();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json([
+                'user' => Auth::user()
+            ]);
         }
 
-        $token = $user->createToken('token')->plainTextToken;
-
-        return response()->json([
-            'token' => $token,
-            'user' => $user
-        ]);
+        return response()->json(['error' => 'Invalid credentials'], 401);
     }
 
     public function logout(Request $request)
     {
-        try {
-            if ($request->user()) {
-                $request->user()->currentAccessToken()->delete();
-            }
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Logout token revocation failed: ' . $e->getMessage());
-        }
+        Auth::logout();
+        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => 'Logged out successfully'
