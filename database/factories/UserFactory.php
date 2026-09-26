@@ -7,26 +7,17 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $randomStr = Str::random(6);
+        
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
+            'name' => 'User ' . $randomStr,
+            'email' => 'user_' . $randomStr . '@gmail.com',
             'password' => static::$password ??= Hash::make('password'),
             'role_id' => 2, // Default to freelancer
         ];
