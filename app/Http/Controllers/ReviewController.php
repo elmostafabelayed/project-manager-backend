@@ -37,7 +37,9 @@ class ReviewController extends Controller
 
        
         $project = Project::findOrFail($request->project_id);
-        $project->update(['status' => 'completed']);
+        if ($project->client_id == Auth::id()) {
+            $project->update(['status' => 'completed']);
+        }
 
         $review = Review::create([
             'reviewer_id' => Auth::id(),

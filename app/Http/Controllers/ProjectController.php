@@ -19,6 +19,12 @@ class ProjectController extends Controller
     {
         return \App\Models\Project::where('client_id', auth()->id())->with('contract.freelancer')->get();
     }
+
+    public function show($id)
+    {
+        return \App\Models\Project::with('client.profile')->findOrFail($id);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -40,6 +46,10 @@ class ProjectController extends Controller
     {
         $project = \App\Models\Project::findOrFail($id);
 
+        if ($project->client_id != auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string|min:20',
@@ -54,6 +64,10 @@ class ProjectController extends Controller
     public function destroy($id)
     {
         $project = \App\Models\Project::findOrFail($id);
+
+        if ($project->client_id != auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $project->delete();
 

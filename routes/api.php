@@ -52,6 +52,7 @@ Route::put('/proposals/{id}/accept', [ProposalController::class, 'accept'])
 Route::put('/proposals/{id}/reject', [ProposalController::class, 'reject'])
     ->middleware('auth:sanctum');
 Route::get('/projects', [ProjectController::class, 'index']);
+Route::get('/projects/{id}', [ProjectController::class, 'show']);
 Route::get('/my-projects', [ProjectController::class, 'myProjects'])
     ->middleware('auth:sanctum');
 
@@ -83,7 +84,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth:sanctum');
 
 // Admin Routes
-Route::prefix('admin')->middleware('auth:sanctum')->group(function() {
+Route::prefix('admin')->middleware(['auth:sanctum', \App\Http\Middleware\CheckAdmin::class])->group(function() {
     Route::get('/stats', [AdminController::class, 'stats']);
     Route::get('/users', [AdminController::class, 'users']);
     Route::get('/projects', [AdminController::class, 'projects']);

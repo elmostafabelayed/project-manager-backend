@@ -32,6 +32,10 @@ class ProposalController extends Controller
     {
         $proposal = Proposal::findOrFail($id);
 
+        if ($proposal->project->client_id != Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $proposal->update([
             'status' => 'accepted'
         ]);
@@ -68,6 +72,10 @@ class ProposalController extends Controller
     public function reject($id)
     {
         $proposal = Proposal::findOrFail($id);
+
+        if ($proposal->project->client_id != Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $proposal->update([
             'status' => 'rejected'
