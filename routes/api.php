@@ -1,16 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProposalController;
-use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SkillController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Middleware\CheckAdmin;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/profile', [ProfileController::class, 'show'])->middleware('auth:sanctum');
 Route::get('/freelancers', [ProfileController::class, 'index']);
@@ -20,7 +22,7 @@ Route::post('/profile', [ProfileController::class, 'update'])->middleware('auth:
 Route::post('/reviews', [ReviewController::class, 'store'])
     ->middleware('auth:sanctum');
 Route::post('/messages', [MessageController::class, 'store'])
-    ->middleware('auth:sanctum');
+    ->middleware(['auth:sanctum', 'throttle:60,1']);
 
 Route::get('/conversations', [ConversationController::class, 'index'])
     ->middleware('auth:sanctum');
@@ -45,7 +47,7 @@ Route::get('/skills', [SkillController::class, 'index']);
 Route::post('/user/skills', [SkillController::class, 'sync'])
     ->middleware('auth:sanctum');
 
-Route::get('/projects/{id}/proposals', [ProposalController::class, 'index']);
+Route::get('/projects/{id}/proposals', [ProposalController::class, 'index'])->middleware('auth:sanctum');
 
 Route::put('/proposals/{id}/accept', [ProposalController::class, 'accept'])
     ->middleware('auth:sanctum');
@@ -77,17 +79,21 @@ Route::put('/notifications/conversation/{conversationId}/read', [NotificationCon
     ->middleware('auth:sanctum');
 Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
     ->middleware('auth:sanctum');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth:sanctum');
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth:sanctum', \App\Http\Middleware\CheckAdmin::class])->group(function() {
+Route::prefix('admin')->middleware(['auth:sanctum', CheckAdmin::class])->group(function () {
     Route::get('/stats', [AdminController::class, 'stats']);
     Route::get('/users', [AdminController::class, 'users']);
     Route::get('/projects', [AdminController::class, 'projects']);
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
     Route::delete('/projects/{id}', [AdminController::class, 'deleteProject']);
 });
+
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/newsletter', [ContactController::class, 'subscribe'])->middleware('throttle:5,1');
+Route::get('/admin/contact-messages', [ContactController::class, 'messages'])->middleware(['auth:sanctum', CheckAdmin::class]);

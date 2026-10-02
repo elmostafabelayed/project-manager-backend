@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
@@ -13,13 +13,14 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@jobsy.com'],
-            [
-                'name' => 'Jobsy Admin',
-                'password' => Hash::make('admin123'),
-                'role_id' => 3 // Admin role
-            ]
+        $email = env('ADMIN_EMAIL');
+        $password = env('ADMIN_PASSWORD');
+        if (! $email || ! filter_var($email, FILTER_VALIDATE_EMAIL) || ! $password || strlen($password) < 12) {
+            throw new \RuntimeException('Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 12 characters) before creating an admin.');
+        }
+        User::firstOrCreate(
+            ['email' => $email],
+            ['name' => 'Jobsy Admin', 'password' => Hash::make($password), 'role_id' => 3]
         );
     }
 }

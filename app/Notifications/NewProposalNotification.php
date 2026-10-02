@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewProposalNotification extends Notification
+class NewProposalNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,6 +18,7 @@ class NewProposalNotification extends Notification
      */
     public function __construct($proposal)
     {
+        $this->afterCommit();
         $this->proposal = $proposal;
     }
 
@@ -38,10 +39,10 @@ class NewProposalNotification extends Notification
     {
         return (new MailMessage)
             ->subject('New Proposal on Your Project')
-            ->line('You have received a new proposal on your project "' . $this->proposal->project->title . '".')
-            ->line('From: ' . $this->proposal->freelancer->name)
-            ->line('Price: $' . $this->proposal->price)
-            ->action('View Proposal', url('/projects/' . $this->proposal->project_id))
+            ->line('You have received a new proposal on your project "'.$this->proposal->project->title.'".')
+            ->line('From: '.$this->proposal->freelancer->name)
+            ->line('Price: $'.$this->proposal->price)
+            ->action('View Proposal', rtrim(config('app.frontend_url'), '/').'/client/projects/'.$this->proposal->project_id.'/proposals')
             ->line('Thank you for using Jobsy!');
     }
 

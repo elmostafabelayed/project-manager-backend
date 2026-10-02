@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Conversation extends Model
 {
@@ -24,6 +24,11 @@ class Conversation extends Model
     public function freelancer()
     {
         return $this->belongsTo(User::class, 'freelancer_id');
+    }
+
+    public function latestMessage()
+    {
+        return $this->hasOne(Message::class)->latestOfMany();
     }
 
     public function messages()

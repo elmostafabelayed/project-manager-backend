@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ProposalAcceptedNotification extends Notification
+class ProposalAcceptedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,6 +18,7 @@ class ProposalAcceptedNotification extends Notification
      */
     public function __construct($proposal)
     {
+        $this->afterCommit();
         $this->proposal = $proposal;
     }
 
@@ -38,9 +39,9 @@ class ProposalAcceptedNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Your Proposal Has Been Accepted!')
-            ->line('Congratulations! Your proposal on "' . $this->proposal->project->title . '" has been accepted.')
-            ->line('Client: ' . $this->proposal->project->client->name)
-            ->action('View Project', url('/projects/' . $this->proposal->project_id))
+            ->line('Congratulations! Your proposal on "'.$this->proposal->project->title.'" has been accepted.')
+            ->line('Client: '.$this->proposal->project->client->name)
+            ->action('View Project', rtrim(config('app.frontend_url'), '/').'/freelancer/my-proposals')
             ->line('Thank you for using Jobsy!');
     }
 

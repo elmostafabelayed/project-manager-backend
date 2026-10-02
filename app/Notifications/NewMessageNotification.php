@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewMessageNotification extends Notification
+class NewMessageNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,6 +18,7 @@ class NewMessageNotification extends Notification
      */
     public function __construct($message)
     {
+        $this->afterCommit();
         $this->message = $message;
     }
 
@@ -38,9 +39,9 @@ class NewMessageNotification extends Notification
     {
         return (new MailMessage)
             ->subject('New Message in Your Conversation')
-            ->line('You have a new message from ' . $this->message->sender->name . ' in project "' . $this->message->conversation->project->title . '".')
-            ->line('Message: ' . substr($this->message->content, 0, 100) . '...')
-            ->action('View Conversation', url('/conversations/' . $this->message->conversation_id))
+            ->line('You have a new message from '.$this->message->sender->name.' in project "'.$this->message->conversation->project->title.'".')
+            ->line('Message: '.substr($this->message->content, 0, 100).'...')
+            ->action('View Conversation', rtrim(config('app.frontend_url'), '/').'/shared/chat?conversationId='.$this->message->conversation_id)
             ->line('Thank you for using Jobsy!');
     }
 

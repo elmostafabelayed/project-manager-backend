@@ -15,13 +15,13 @@ return [
     |
     */
 
-'paths' => ['api/*', 'sanctum/csrf-cookie'],
-'allowed_methods' => ['*'],
-'allowed_origins' => ['http://localhost:3000', env('FRONTEND_URL', 'https://your-react-app.onrender.com')],
-'allowed_origins_patterns' => [],
-'allowed_headers' => ['*'],
-'exposed_headers' => [],
-'max_age' => 0,
-'supports_credentials' => true,
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => array_values(array_unique(array_filter([env('FRONTEND_URL'), ...(env('APP_ENV', 'production') === 'local' ? ['http://localhost:3000', 'http://127.0.0.1:3000'] : [])]))),
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true,
 
 ];

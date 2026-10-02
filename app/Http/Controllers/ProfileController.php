@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Profile;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
@@ -12,7 +13,8 @@ class ProfileController extends Controller
      */
     public function index(Request $request)
     {
-        $query = \App\Models\User::where('role_id', 2)
+        $request->validate(['page' => 'sometimes|integer|min:1', 'per_page' => 'sometimes|integer|min:1|max:100', 'category' => 'nullable|string|max:255']);
+        $query = User::select('id', 'name', 'role_id', 'created_at')->where('role_id', 2)
             ->with(['profile', 'skills']);
 
         $query->when($request->filled('category'), function ($q) use ($request) {
@@ -21,7 +23,7 @@ class ProfileController extends Controller
             });
         });
 
-        $freelancers = $query->get();
+        $freelancers = $query->orderByDesc('id')->paginate($request->integer('per_page', 12));
 
         return response()->json($freelancers);
     }
@@ -31,12 +33,12 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $user = $request->user()->load(['profile', 'skills', 'role', 'reviewsReceived.reviewer']);
-        
-        if (!$user->profile) {
+        $user = $request->user()->load(['profile', 'skills', 'role', 'reviewsReceived.reviewer:id,name']);
+
+        if (! $user->profile) {
             // Create a default profile if it doesn't exist yet to avoid 404
             $user->profile()->create([
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
             $user->load('profile');
         }
@@ -48,7 +50,7 @@ class ProfileController extends Controller
             'role' => $user->role,
             'profile' => $user->profile,
             'skills' => $user->skills,
-            'reviews_received' => $user->reviewsReceived
+            'reviews_received' => $user->reviewsReceived,
         ]);
     }
 
@@ -57,7 +59,7 @@ class ProfileController extends Controller
      */
     public function publicShow($id)
     {
-        $user = \App\Models\User::with(['profile', 'skills', 'role', 'reviewsReceived.reviewer'])->findOrFail($id);
+        $user = User::with(['profile', 'skills', 'role', 'reviewsReceived.reviewer:id,name'])->findOrFail($id);
 
         return response()->json([
             'id' => $user->id,
@@ -66,24 +68,23 @@ class ProfileController extends Controller
             'profile' => $user->profile,
             'skills' => $user->skills,
             'created_at' => $user->created_at,
-            'reviews_received' => $user->reviewsReceived
+            'reviews_received' => $user->reviewsReceived,
         ]);
     }
 
-    
     public function update(Request $request)
     {
         $validatedData = $request->validate([
             'name' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
-            'bio' => 'nullable|string',
+            'bio' => 'nullable|string|max:10000',
             'location' => 'nullable|string|max:255',
-            'hourly_rate' => 'nullable|numeric|min:0',
-            'profile_picture' => 'nullable|image|max:2048',
+            'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $user = $request->user();
-        
+
         // Update user name if provided
         if (isset($validatedData['name'])) {
             $user->update(['name' => $validatedData['name']]);
@@ -102,7 +103,7 @@ class ProfileController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             'profile' => $profile,
-            'user' => $user->load(['profile', 'role', 'skills'])
+            'user' => $user->load(['profile', 'role', 'skills']),
         ]);
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -25,17 +25,21 @@ class AdminController extends Controller
     /**
      * List all users.
      */
-    public function users()
+    public function users(Request $request)
     {
-        return response()->json(User::with('role')->get());
+        $request->validate(['page' => 'sometimes|integer|min:1', 'per_page' => 'sometimes|integer|min:1|max:100']);
+
+        return User::with('role')->orderByDesc('id')->paginate($request->integer('per_page', 12));
     }
 
     /**
      * List all projects.
      */
-    public function projects()
+    public function projects(Request $request)
     {
-        return response()->json(Project::with('client')->get());
+        $request->validate(['page' => 'sometimes|integer|min:1', 'per_page' => 'sometimes|integer|min:1|max:100']);
+
+        return Project::with('client:id,name')->orderByDesc('id')->paginate($request->integer('per_page', 12));
     }
 
     /**
@@ -49,6 +53,7 @@ class AdminController extends Controller
 
         $user = User::findOrFail($id);
         $user->delete();
+
         return response()->json(['message' => 'User deleted successfully']);
     }
 
@@ -59,6 +64,7 @@ class AdminController extends Controller
     {
         $project = Project::findOrFail($id);
         $project->delete();
+
         return response()->json(['message' => 'Project deleted successfully']);
     }
 }

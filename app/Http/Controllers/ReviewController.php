@@ -2,57 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Review;
 use App\Models\Project;
+use App\Models\Review;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
-
-
-   public function store(Request $request)
-{
-    $request->validate([
-        'project_id' => 'required|exists:projects,id',
-        'reviewed_id' => 'required|exists:users,id',
-        'rating' => 'required|integer|min:1|max:5',
-        'comment' => 'required|string|min:5|max:1000'
-    ]);
-
-    try {
-       
-        if (Auth::id() == $request->reviewed_id) {
-            return response()->json(['error' => 'You cannot review yourself'], 400);
-        }
-
-    
-        $exists = Review::where('reviewer_id', Auth::id())
-                        ->where('project_id', $request->project_id)
-                        ->exists();
-
-        if ($exists) {
-            return response()->json(['error' => 'Already reviewed'], 400);
-        }
-
-       
-        $project = Project::findOrFail($request->project_id);
-        if ($project->client_id == Auth::id()) {
-            $project->update(['status' => 'completed']);
-        }
-
-        $review = Review::create([
-            'reviewer_id' => Auth::id(),
-            'reviewed_id' => $request->reviewed_id,
-            'project_id'  => $request->project_id,
-            'rating'      => $request->rating,
-            'comment'     => $request->comment
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'reviewed_id' => 'required|exists:users,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|min:5|max:1000',
         ]);
 
-        return response()->json($review, 201);
+        return DB::transaction(function () use ($request, $data) {
+            $project = Project::whereKey($data['project_id'])->lockForUpdate()->firstOrFail();
+            $contract = $project->contract;
+            abort_unless($contract, 403, 'A contract is required to review this project.');
+            $userId = (int) $request->user()->id;
+            $clientId = (int) $contract->client_id;
+            $freelancerId = (int) $contract->freelancer_id;
+            abort_unless(
+                ($userId === $clientId && (int) $data['reviewed_id'] === $freelancerId) ||
+                ($userId === $freelancerId && (int) $data['reviewed_id'] === $clientId),
+                403, 'Only contract participants may review each other.'
+            );
+            abort_if(Review::where('reviewer_id', $userId)->where('project_id', $project->id)->exists(), 409, 'Already reviewed.');
+            abort_unless(in_array($project->status, ['active', 'completed'], true), 409);
+            abort_unless($userId === $clientId || $project->status === 'completed', 409, 'The client must complete the project first.');
 
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
+            if ($userId === $clientId) {
+                $project->status = 'completed';
+                $project->save();
+                $contract->update(['status' => 'completed']);
+            }
+
+            return response()->json(Review::create($data + ['reviewer_id' => $userId]), 201);
+        });
     }
-}
 }

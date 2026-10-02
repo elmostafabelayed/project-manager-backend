@@ -2,19 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Models\User;
-use App\Models\Profile;
-use App\Models\Skill;
-use App\Models\Project;
-use App\Models\Proposal;
 use App\Models\Contract;
 use App\Models\Conversation;
 use App\Models\Message;
-use App\Models\Review;
 use App\Models\Notification;
+use App\Models\Profile;
+use App\Models\Project;
+use App\Models\Proposal;
+use App\Models\Review;
+use App\Models\Skill;
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,6 +24,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        if (app()->environment('production')) {
+            throw new \RuntimeException('Demo seeding is disabled in production. Use SetupSeeder.');
+        }
+
         // 1. Static seeders
         $this->call(RoleSeeder::class);
         $this->call(SkillSeeder::class);
@@ -69,7 +72,7 @@ class DatabaseSeeder extends Seeder
             $proj = $projects->random();
             $free = $freelancers->random();
             $key = "{$proj->id}-{$free->id}";
-            if (!isset($proposalPairs[$key])) {
+            if (! isset($proposalPairs[$key])) {
                 $proposalPairs[$key] = true;
                 Proposal::factory()->create([
                     'project_id' => $proj->id,
@@ -84,7 +87,7 @@ class DatabaseSeeder extends Seeder
         for ($i = 0; $i < 15; $i++) {
             $project = $projects[$i];
             // Find a freelancer who proposed on this project, or select a random freelancer
-            $bidder = Proposal::where('project_id', $project->id)->first()?->freelancer_id 
+            $bidder = Proposal::where('project_id', $project->id)->first()?->freelancer_id
                       ?? $freelancers->random()->id;
 
             Contract::factory()->create([
@@ -115,7 +118,7 @@ class DatabaseSeeder extends Seeder
         $conversations = Conversation::all();
         foreach ($conversations as $conversation) {
             $senderId = fake()->boolean() ? $conversation->client_id : $conversation->freelancer_id;
-            if (!$senderId) {
+            if (! $senderId) {
                 $senderId = $users->random()->id;
             }
 

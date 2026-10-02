@@ -3,29 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conversation;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
 {
     /**
      * Display a listing of conversations for the authenticated user.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->validate([
+            'before_id' => 'nullable|integer|min:1',
+            'conversation_id' => 'nullable|integer|min:1',
+        ]);
         $userId = Auth::id();
 
         // Get conversations where the user is either the client or the freelancer
-        $conversations = Conversation::with(['project', 'client.profile', 'freelancer.profile'])
-            ->where('client_id', $userId)
-            ->orWhere('freelancer_id', $userId)
-            ->get();
+        $conversations = Conversation::with(['project', 'client.profile', 'freelancer.profile', 'latestMessage'])
+            ->where(fn ($query) => $query->where('client_id', $userId)->orWhere('freelancer_id', $userId))
+            ->when($request->filled('before_id'), fn ($query) => $query->where('id', '<', $request->integer('before_id')))
+            ->when($request->filled('conversation_id'), fn ($query) => $query->whereKey($request->integer('conversation_id')))
+            ->orderByDesc('id')->limit(50)->get();
 
         // Format for easier frontend consumption
         $formatted = $conversations->map(function ($conversation) use ($userId) {
             // Determine the "other participant"
-            $otherParticipant = ($conversation->client_id == $userId) 
-                ? $conversation->freelancer 
+            $otherParticipant = ($conversation->client_id == $userId)
+                ? $conversation->freelancer
                 : $conversation->client;
 
             return [
@@ -39,7 +47,7 @@ class ConversationController extends Controller
                     'name' => $otherParticipant->name,
                     'profile' => $otherParticipant->profile,
                 ] : null,
-                'last_message' => $conversation->messages()->latest()->first(),
+                'last_message' => $conversation->latestMessage,
                 'updated_at' => $conversation->updated_at,
             ];
         });
@@ -57,51 +65,26 @@ class ConversationController extends Controller
             'project_id' => 'nullable|exists:projects,id',
         ]);
 
-        $authId = Auth::id();
-        $otherId = $request->user_id;
-        $projectId = $request->project_id;
+        $authUser = $request->user();
+        $otherUser = User::findOrFail($request->user_id);
+        abort_unless(
+            ((int) $authUser->role_id === 1 && (int) $otherUser->role_id === 2) ||
+            ((int) $authUser->role_id === 2 && (int) $otherUser->role_id === 1), 403
+        );
+        $clientId = (int) $authUser->role_id === 1 ? $authUser->id : $otherUser->id;
+        $freelancerId = (int) $authUser->role_id === 2 ? $authUser->id : $otherUser->id;
+        $project = Project::where('client_id', $clientId)
+            ->when($request->filled('project_id'), fn ($q) => $q->whereKey($request->project_id))
+            ->latest()->firstOrFail();
+        $conversation = DB::transaction(function () use ($project, $clientId, $freelancerId) {
+            Project::whereKey($project->id)->lockForUpdate()->firstOrFail();
 
-        // Try to find an existing conversation
-        $query = Conversation::where(function($q) use ($authId, $otherId) {
-            $q->where('client_id', $authId)->where('freelancer_id', $otherId);
-        })->orWhere(function($q) use ($authId, $otherId) {
-            $q->where('client_id', $otherId)->where('freelancer_id', $authId);
-        });
-
-        if ($projectId) {
-            $query->where('project_id', $projectId);
-        }
-
-        $conversation = $query->first();
-
-        if (!$conversation) {
-            // If no project_id is provided, try to find the most recent project between them
-            if (!$projectId) {
-                $project = \App\Models\Project::where('client_id', $authId)
-                    ->orWhere('client_id', $otherId)
-                    ->latest()
-                    ->first();
-                
-                if ($project) {
-                    $projectId = $project->id;
-                } else {
-                    return response()->json(['message' => 'No project found to associate with this conversation.'], 422);
-                }
-            }
-
-            // Determine roles
-            $authUser = Auth::user();
-            $otherUser = \App\Models\User::find($otherId);
-
-            $clientId = ($authUser->role_id == 1) ? $authId : $otherId;
-            $freelancerId = ($authUser->role_id == 2) ? $authId : $otherId;
-
-            $conversation = Conversation::create([
-                'project_id' => $projectId,
+            return Conversation::firstOrCreate([
+                'project_id' => $project->id,
                 'client_id' => $clientId,
                 'freelancer_id' => $freelancerId,
             ]);
-        }
+        });
 
         return response()->json([
             'id' => $conversation->id,
